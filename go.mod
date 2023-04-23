@@ -8,4 +8,4 @@ require (
 	golang.org/x/exp v0.0.0-20230420155640-133eef4313cb
 )
 
-require github.com/sashabaranov/go-openai v1.5.8 // indirect
+require github.com/sashabaranov/go-openai v1.5.8
