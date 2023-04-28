@@ -2,10 +2,11 @@ package entities
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	tiktoken_go "github.com/j178/tiktoken-go"
+	"github.com/tiktoken-go/tokenizer"
 	"golang.org/x/exp/slices"
 )
 
@@ -19,7 +20,16 @@ type Message struct {
 }
 
 func NewMessage(role, content string, model *Model) (*Message, error) {
-	currentTokens := tiktoken_go.CountTokens(model.GetName(), content)
+	enc, err := tokenizer.Get(tokenizer.Cl100kBase)
+
+	if err != nil {
+		return nil, err
+	}
+	tokenIds, _, _ := enc.Encode(content)
+
+	currentTokens := len(tokenIds)
+
+	fmt.Println("currentTokens", currentTokens)
 
 	msg := &Message{
 		ID:        uuid.New().String(),
@@ -36,7 +46,7 @@ func NewMessage(role, content string, model *Model) (*Message, error) {
 }
 
 func (m *Message) Validate() error {
-	roles := []string{"user", "system", "system"}
+	roles := []string{"user", "system", "assistant"}
 
 	if slices.Contains(roles, m.Role) {
 		return nil
