@@ -13,11 +13,11 @@ import (
 
 type ChatCompletionUseCase struct {
 	ChatGateway  gateways.ChatGateway
-	OpenAIClient openai.Client
-	Stream       chan ChatCompletionOutputDTO
+	OpenAIClient *openai.Client
+	Stream       chan ChatCompletionStreamOutputDTO
 }
 
-type ChatCompletionConfigInputDTO struct {
+type ChatCompletionStreamConfigInputDTO struct {
 	Model                string
 	ModelMaxTokens       int
 	Temperature          float32
@@ -30,20 +30,20 @@ type ChatCompletionConfigInputDTO struct {
 	InitialSystemMessage string
 }
 
-type ChatCompletionInputDTO struct {
+type ChatCompletionStreamInputDTO struct {
 	ChatID      string
 	UserID      string
 	UserMessage string
-	Config      ChatCompletionConfigInputDTO
+	Config      ChatCompletionStreamConfigInputDTO
 }
 
-type ChatCompletionOutputDTO struct {
+type ChatCompletionStreamOutputDTO struct {
 	ChatID  string
 	UserID  string
 	Content string
 }
 
-func NewChatCompletionUseCase(chatGateway gateways.ChatGateway, openAIClient openai.Client, stream chan ChatCompletionOutputDTO) *ChatCompletionUseCase {
+func NewChatCompletionStreamUseCase(chatGateway gateways.ChatGateway, openAIClient *openai.Client, stream chan ChatCompletionStreamOutputDTO) *ChatCompletionUseCase {
 	return &ChatCompletionUseCase{
 		ChatGateway:  chatGateway,
 		OpenAIClient: openAIClient,
@@ -51,7 +51,7 @@ func NewChatCompletionUseCase(chatGateway gateways.ChatGateway, openAIClient ope
 	}
 }
 
-func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompletionInputDTO) (*ChatCompletionOutputDTO, error) {
+func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompletionStreamInputDTO) (*ChatCompletionStreamOutputDTO, error) {
 	chat, err := uc.ChatGateway.FindChatById(ctx, input.ChatID)
 
 	if err != nil {
@@ -121,7 +121,7 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 
 		fullResponse.WriteString(response.Choices[0].Delta.Content)
 
-		r := ChatCompletionOutputDTO{
+		r := ChatCompletionStreamOutputDTO{
 			ChatID:  chat.ID,
 			UserID:  input.UserID,
 			Content: fullResponse.String(),
@@ -147,14 +147,14 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 	if err != nil {
 		return nil, errors.New("failed to save chat: " + err.Error())
 	}
-	return &ChatCompletionOutputDTO{
+	return &ChatCompletionStreamOutputDTO{
 		ChatID:  chat.ID,
 		UserID:  input.UserID,
 		Content: fullResponse.String(),
 	}, nil
 }
 
-func createNewChat(input ChatCompletionInputDTO) (*entities.Chat, error) {
+func createNewChat(input ChatCompletionStreamInputDTO) (*entities.Chat, error) {
 	model := entities.NewModel(input.Config.Model, input.Config.ModelMaxTokens)
 	chatConfig := &entities.ChatConfig{
 		Model:            model,
