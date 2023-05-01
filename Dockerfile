@@ -9,10 +9,8 @@ RUN go mod download
 
 COPY . .
 
-# Build
-RUN go build -o /chat-service
-
 EXPOSE 8080
+EXPOSE 50051
 
 # Run
 CMD ["/chat-service"]
