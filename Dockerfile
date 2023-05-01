@@ -7,7 +7,7 @@ WORKDIR /go/src
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go ./
+COPY . .
 
 # Build
 RUN go build -o /chat-service
