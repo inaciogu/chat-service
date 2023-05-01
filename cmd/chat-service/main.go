@@ -67,6 +67,6 @@ func main() {
 
 	webServer.AddHandler("/chat", webServerChatHandler.Handle)
 
-	fmt.Println("Webserver is running on port " + configs.WebServerPort)
+	fmt.Println("Webserver is running on port: ! " + configs.WebServerPort)
 	webServer.Start()
 }

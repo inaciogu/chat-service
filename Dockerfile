@@ -1,16 +1,20 @@
 FROM golang:1.20.3-bullseye
 
-ENV PATH="root/.cargo/bin:${PATH}"
-ENV USER=root
+# Set destination for COPY
+WORKDIR /app
 
-WORKDIR /go/src
-
-RUN ln -sf /bin/bash /bin/sh
-
+# Download Go modules
 COPY go.mod go.sum ./
+RUN go mod download
 
-RUN go mod download && go mod verify
+# Copy the source code. Note the slash at the end, as explained in
+# https://docs.docker.com/engine/reference/builder/#copy
+COPY *.go ./
 
-COPY . .
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -o /chat-service
 
-CMD [ "go", "run", "cmd/chat-service/main.go" ]
+EXPOSE 8080
+
+# Run
+CMD ["/chat-service"]
